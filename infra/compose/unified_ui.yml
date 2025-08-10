@@ -1,0 +1,18 @@
+<CODE_BLOCK>
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:80"
+    depends_on:
+      - keycloak
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend # Assuming you'll create a Dockerfile for the frontend build
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+</CODE_BLOCK>

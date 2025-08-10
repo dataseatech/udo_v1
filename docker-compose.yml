@@ -20,6 +20,7 @@ include:
   - infra/compose/komiser.yml
   - infra/compose/airbyte_proxy.yml  # Airbyte proxy (Kind -> compose network)
   - infra/compose/backend.yml
+  - infra/compose/unified_ui.yml
 
 # Now you can use:
 # docker-compose up -d
