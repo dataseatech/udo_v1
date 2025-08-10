@@ -1,0 +1,28 @@
+services:
+  backend:
+    build:
+      context: ../../services/fastapi
+    image: udo-backend:local
+    container_name: ${COMPOSE_PROJECT_NAME:-udo}_backend
+    environment:
+      - OIDC_ISSUER=http://keycloak:8080/realms/master
+      - OIDC_AUDIENCE=account
+      - OIDC_CLIENT_ID=udo-frontend
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-}
+      - OIDC_REDIRECT_URI=http://localhost:3080
+      - OIDC_PUBLIC_ISSUER=http://localhost:8080/realms/master
+      - OPENMETADATA_HOST=openmetadata-server
+      - OPENMETADATA_PORT=8585
+    depends_on:
+      - keycloak
+      - openmetadata-server
+  # No external port mapping needed; frontend proxies via internal service name
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks:
+      - udo-net
+
+networks: {}
