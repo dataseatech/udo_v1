@@ -17,12 +17,8 @@
    ```
 
 ## Services
-- Frontend (React + Vite) via nginx at http://localhost:3080 (build artifact container)
-- Backend API Gateway (FastAPI) internal (container port 8000) proxied through frontend container `/api` and `/openmetadata`
-
-### Frontend Dev
-
-Inside `services/frontend` run `npm install` then `npm run dev` (port 3000). Configure API base via `.env` with `VITE_API_BASE` (default http://localhost:8080).
+Backend API Gateway (FastAPI) exposed on host http://localhost:8800 (container port 8000).
+An external frontend (separate repository) should point its API base to: `http://localhost:8800` (e.g. `VITE_API_BASE=http://localhost:8800`).
 
 ### Auth & Metadata
 
@@ -32,9 +28,9 @@ FastAPI gateway exposes:
 * `/api/auth/me` – validates bearer token and returns claims
 * `/openmetadata/*` – reverse proxy to OpenMetadata server
 
-Keycloak client (realm `master`, clientId `udo-frontend`) must have:
-* Redirect URIs: `http://localhost:3080/*`
-* Web Origins: `http://localhost:3080`
+Keycloak client (realm `master`, clientId `udo`) must have:
+* Redirect URIs: `http://localhost:8800/*` (and any external frontend origin you use)
+* Web Origins: `http://localhost:8800` (plus external frontend origin)
 * Standard Flow enabled, PKCE enabled (on by default KC 24 for public clients)
 
 Automated creation (dev only):

@@ -1,6 +1,6 @@
-# Unified Frontend Reverse Proxy & Keycloak / Embedding Guidance
+# Unified Frontend Reverse Proxy & Keycloak / Embedding Guidance (External Frontend Repo)
 
-Purpose: Enable a single React SPA (frontend) to access backend APIs and embed Grafana, OpenMetadata, Prefect (and optionally Airbyte) without third‑party cookie issues. Strategy: serve SPA, backend (/api), and embedded tool iframes behind one parent domain (e.g. https://udo.local) via a reverse proxy (nginx/Traefik/Caddy). All auth is mediated by FastAPI + Keycloak OIDC; frontend never talks to Keycloak directly.
+Purpose: Enable a single React SPA (external repository) to access backend APIs and embed Grafana, OpenMetadata, Prefect (and optionally Airbyte) without third‑party cookie issues. Strategy: serve SPA, backend (/api), and embedded tool iframes behind one parent domain (e.g. https://udo.local) via a reverse proxy (nginx/Traefik/Caddy). All auth is mediated by FastAPI + Keycloak OIDC; the SPA never talks to Keycloak directly.
 
 ## 1. Keycloak Configuration
 Realm: udo

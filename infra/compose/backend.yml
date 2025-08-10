@@ -9,7 +9,6 @@ services:
       - OIDC_AUDIENCE=account
       - OIDC_CLIENT_ID=udo
       - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-}
-      - OIDC_REDIRECT_URI=http://localhost:3080
       - OIDC_PUBLIC_ISSUER=http://localhost:8080/realms/master
       - OPENMETADATA_HOST=openmetadata-server
       - OPENMETADATA_PORT=8585

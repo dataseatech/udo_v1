@@ -19,7 +19,6 @@ include:
   - infra/compose/promptfoo.yml
   - infra/compose/komiser.yml
   - infra/compose/airbyte_proxy.yml  # Airbyte proxy (Kind -> compose network)
-  - infra/compose/frontend.yml
   - infra/compose/backend.yml
 
 # Now you can use:

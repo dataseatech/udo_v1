@@ -68,7 +68,7 @@ async def start_login(
 ):
     issuer_for_browser = OIDC_PUBLIC_ISSUER or OIDC_ISSUER
     incoming_host = request.headers.get("host", "localhost:3000")
-    # Try to infer the frontend origin from Referer; fall back to env or host
+    # Try to infer the external client origin (frontend) from Referer; fall back to env or host
     referer = request.headers.get("referer") or request.headers.get("origin")
     frontend_origin = None
     if referer:
@@ -80,7 +80,7 @@ async def start_login(
             frontend_origin = None
     runtime_base = f"http://{incoming_host}"
     # Allow explicit redirect_uri override via query param. Otherwise prefer the
-    # actual frontend origin detected from the browser, then env var, then backend host
+    # external client origin detected from the browser, then env var, then backend host
     redirect_uri = redirect_uri or frontend_origin or OIDC_REDIRECT_URI or runtime_base
     # Fallback: if issuer still references internal docker hostname 'keycloak' but browser host is localhost, rewrite for dev UX.
     if "keycloak" in issuer_for_browser and incoming_host.startswith("localhost"):
@@ -115,7 +115,7 @@ async def auth_me(user=Depends(verify_token)):
 async def auth_callback(code: str | None = None, request: Request = None, redirect_uri: str | None = None):
     if not code:
         raise HTTPException(status_code=400, detail="code required")
-    # If the frontend passes redirect_uri, prefer it. Else fallback to env or request base_url
+    # If the client passes redirect_uri, prefer it. Else fallback to env or request base_url
     effective_redirect_uri = redirect_uri or OIDC_REDIRECT_URI
     if not effective_redirect_uri and request is not None:
         effective_redirect_uri = str(request.base_url).rstrip('/')
@@ -143,13 +143,13 @@ async def auth_callback(code: str | None = None, request: Request = None, redire
         if r.status_code >= 400:
             raise HTTPException(status_code=500, detail=f"token exchange failed: {r.text}")
         tokens = r.json()
-    # Don't store server-side; return to frontend (dev). Consider HttpOnly cookie for production.
+    # Don't store server-side; return to caller (dev). Consider HttpOnly cookie for production.
     return {"access_token": tokens.get("access_token"), "refresh_token": tokens.get("refresh_token"), "id_token": tokens.get("id_token")}
 
 
 @app.get("/api/auth/logout")
 async def auth_logout():
-    # Frontend can redirect to Keycloak end-session endpoint
+    # External client can redirect to Keycloak end-session endpoint
     end_session = f"{OIDC_ISSUER}/protocol/openid-connect/logout"
     return {"logout": True, "end_session_endpoint": end_session}
 

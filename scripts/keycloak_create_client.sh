@@ -6,9 +6,10 @@
 set -e
 KC_CONTAINER=${KC_CONTAINER:-$(docker ps --format '{{.Names}}' | grep keycloak | head -1)}
 REALM=${REALM:-master}
-CLIENT_ID=${CLIENT_ID:-udo-frontend}
-REDIRECT_URI=${REDIRECT_URI:-http://localhost:3080/*}
-WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:3080}
+CLIENT_ID=${CLIENT_ID:-udo}
+# Redirect URI now points to backend (adjust if external frontend repo runs on another origin)
+REDIRECT_URI=${REDIRECT_URI:-http://localhost:8800/*}
+WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:8800}
 
 if [ -z "$KC_CONTAINER" ]; then
   echo "Keycloak container not found" >&2
