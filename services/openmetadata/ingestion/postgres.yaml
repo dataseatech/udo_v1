@@ -1,0 +1,33 @@
+source:
+  type: postgres
+  serviceName: udo_postgres
+  serviceConnection:
+    config:
+      type: Postgres
+      username: ${POSTGRES_USER:-udo}
+      password: ${POSTGRES_PASSWORD:-udo_pass}
+      hostPort: udo-postgres:5432
+      database: ${POSTGRES_DB:-udo_db}
+  sourceConfig:
+    config:
+      type: DatabaseMetadata
+
+processor:
+  type: simple
+  config: {}
+
+ingestionPipeline:
+  name: postgres_metadata
+  workflowConfig:
+    openMetadataServerConfig:
+      hostPort: http://openmetadata-server:8585/api
+      authProvider: no-auth
+
+sink:
+  type: metadata-rest
+  config: {}
+
+workflowConfig:
+  openMetadataServerConfig:
+    hostPort: http://openmetadata-server:8585/api
+    authProvider: no-auth

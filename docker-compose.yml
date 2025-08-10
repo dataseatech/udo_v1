@@ -1,0 +1,25 @@
+include:
+  - infra/compose/volumes_networks.yml
+  - infra/compose/postgres.yml
+  - infra/compose/minio.yml
+  - infra/compose/openmetadata.yml
+  - infra/compose/prefect.yml
+  - infra/compose/keycloak.yml
+  - infra/compose/duckdb.yml
+  - infra/compose/redis.yml
+  - infra/compose/vault.yml
+  - infra/compose/monitoring.yml
+  - infra/compose/weaviate.yml
+  - infra/compose/mlflow.yml
+  - infra/compose/pushgateway.yml
+  - infra/compose/dbt.yml
+  - infra/compose/langchain.yml
+  - infra/compose/ollama.yml
+  - infra/compose/ogem.yml
+  - infra/compose/promptfoo.yml
+  - infra/compose/komiser.yml
+  - infra/compose/airbyte_proxy.yml  # Airbyte proxy (Kind -> compose network)
+
+# Now you can use:
+# docker-compose up -d
+# docker-compose down

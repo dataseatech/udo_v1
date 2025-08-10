@@ -1,0 +1,20 @@
+[server]
+port = 3001
+
+[providers]
+# All provider blocks disabled for now. Uncomment and configure when ready.
+# [[providers.aws]]
+# name = "primary"
+# regions = ["us-east-1"]
+# role_arn = "arn:aws:iam::123456789012:role/CostExplorerRead" # optional
+# services = ["ec2", "s3", "rds"] # optional subset
+
+# [[providers.gcp]]
+# project_id = "my-project"
+# credentials_file = "/home/komiser/.gcp/creds.json"
+
+# [[providers.azure]]
+# subscription_id = "xxxx-xxxx-xxxx"
+# tenant_id = "xxxx-xxxx-xxxx"
+# client_id = "xxxx-xxxx-xxxx"
+# client_secret_env_var = "AZURE_CLIENT_SECRET"

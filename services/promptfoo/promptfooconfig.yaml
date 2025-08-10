@@ -1,0 +1,8 @@
+prompts:
+  - "What is the capital of France?"
+providers: []
+tests:
+  - vars: {}
+    assert:
+      - type: contains
+        value: Paris

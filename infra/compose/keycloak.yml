@@ -1,0 +1,16 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.3
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: start-dev
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/realms/master"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+

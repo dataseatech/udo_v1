@@ -1,0 +1,19 @@
+# Komiser service (spaces only, no tabs)
+services:
+  komiser:
+    image: tailwarden/komiser:latest
+    restart: unless-stopped
+    profiles: [komiser]  # Not started unless --profile komiser is used
+    environment:
+      KOMISER_PORT: 3001
+      # AWS credentials commented out until needed. Remove comments to enable AWS provider.
+      # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # AWS_REGION: ${AWS_REGION:-us-east-1}
+    command: ["komiser", "start", "--config", "/etc/komiser/config.toml", "--port", "3001", "--verbose"]
+    volumes:
+      - ../../services/komiser/config.toml:/etc/komiser/config.toml:ro
+    ports:
+      - "3001:3001"
+    networks:
+      - udo-net

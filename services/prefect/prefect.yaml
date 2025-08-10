@@ -1,0 +1,22 @@
+name: udo-prefect
+version: 1.0.0
+
+prefect-version: 2.14.0
+
+build:
+- prefect_docker.deployments.steps.build_docker_image:
+    id: build-image
+    requires: prefect-docker>=0.3.0
+    image_name: udo/prefect
+    tag: latest
+    dockerfile: Dockerfile
+
+deployments:
+- name: data-sync-deployment
+  entrypoint: flows/data_sync_flow.py:data_sync_flow
+  schedule:
+    cron: "0 */6 * * *"  # Every 6 hours
+  parameters:
+    connection_id: "{{ $AIRBYTE_CONNECTION_ID }}"
+  work_pool:
+    name: kubernetes-pool

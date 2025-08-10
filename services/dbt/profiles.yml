@@ -1,0 +1,13 @@
+default:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: udo-postgres
+      user: udo
+      password: udo_pass
+      port: 5432
+      dbname: udo_db
+      schema: analytics
+      threads: 4
+      keepalives_idle: 0

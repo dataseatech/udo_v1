@@ -1,0 +1,27 @@
+{
+  "source": {
+    "name": "minio-csv-source",
+    "sourceDefinitionId": "b2e713cd-cc70-4c0a-bb70-1a1f7b5a6c5e",
+    "workspaceId": "default",
+    "connectionConfiguration": {
+      "endpoint": "http://minio:9000",
+      "access_key_id": "minioadmin",
+      "secret_access_key": "minioadmin",
+      "bucket": "udo-csv",
+      "path": "sample.csv"
+    }
+  },
+  "destination": {
+    "name": "udo-postgres-dest",
+    "destinationDefinitionId": "25c5221d-dce2-4163-ade9-739ef8fd4d7e",
+    "workspaceId": "default",
+    "connectionConfiguration": {
+      "host": "udo-postgres",
+      "port": 5432,
+      "username": "udo",
+      "password": "udo_pass",
+      "database": "udo_db",
+      "ssl": false
+    }
+  }
+}

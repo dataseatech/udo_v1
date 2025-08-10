@@ -1,0 +1,5 @@
+# Enforce single project name and reuse external network
+version: '3.9'
+networks:
+  udo-net:
+    external: true

@@ -1,0 +1,8 @@
+name: udo_dbt
+version: 1.0.0
+config-version: 2
+profile: default
+model-paths: ["models"]
+models:
+  udo_dbt:
+    +materialized: view

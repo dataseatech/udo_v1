@@ -1,0 +1,13 @@
+volumes:
+  pgdata:
+  minio-data:
+  weaviate-data:
+  duckdb-data:
+  openmetadata-mysql-data:
+  openmetadata-es-data:
+  mlflow-data:
+  ollama-data:
+
+networks:
+  udo-net:
+    driver: bridge

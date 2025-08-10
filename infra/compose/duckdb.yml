@@ -1,0 +1,10 @@
+services:
+  duckdb-runner:
+    image: python:3.9-slim
+    restart: unless-stopped
+    command: bash -c "pip install duckdb && tail -f /dev/null"
+    volumes:
+      - ./samples:/app/samples
+    networks:
+      - udo-net
+

@@ -1,0 +1,106 @@
+services:
+  openmetadata-postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: openmetadata_user
+      POSTGRES_PASSWORD: openmetadata_password
+      POSTGRES_DB: openmetadata_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openmetadata_user || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    volumes:
+      - openmetadata-pg-data:/var/lib/postgresql/data
+    networks:
+      - udo-net
+
+  openmetadata-es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - openmetadata-es-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - udo-net
+
+  openmetadata-server:
+    image: openmetadata/server:1.8.10
+    restart: unless-stopped
+    depends_on:
+      openmetadata-migrate:
+        condition: service_completed_successfully
+      openmetadata-postgres:
+        condition: service_healthy
+      openmetadata-es:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8585
+      AUTHORIZATION_ENABLED: 'false'
+      DB_DRIVER_CLASS: org.postgresql.Driver
+      DB_SCHEME: postgresql
+      DB_HOST: openmetadata-postgres
+      DB_PORT: 5432
+      DB_USER: openmetadata_user
+      DB_USER_PASSWORD: openmetadata_password
+      OM_DATABASE: openmetadata_db
+      DB_USE_SSL: 'false'
+      DB_PARAMS: "allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+      SEARCH_TYPE: elasticsearch
+      ELASTICSEARCH_HOST: openmetadata-es
+      ELASTICSEARCH_PORT: 9200
+      ELASTICSEARCH_SCHEME: http
+    ports:
+      - "8585:8585"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8585/api/v1/system/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - udo-net
+
+  openmetadata-migrate:
+    image: openmetadata/server:1.8.10
+    restart: "no"
+    depends_on:
+      openmetadata-postgres:
+        condition: service_healthy
+      openmetadata-es:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8585
+      AUTHORIZATION_ENABLED: 'false'
+      DB_DRIVER_CLASS: org.postgresql.Driver
+      DB_SCHEME: postgresql
+      DB_HOST: openmetadata-postgres
+      DB_PORT: 5432
+      DB_USER: openmetadata_user
+      DB_USER_PASSWORD: openmetadata_password
+      OM_DATABASE: openmetadata_db
+      DB_USE_SSL: 'false'
+      DB_PARAMS: "allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+      SEARCH_TYPE: elasticsearch
+      ELASTICSEARCH_HOST: openmetadata-es
+      ELASTICSEARCH_PORT: 9200
+      ELASTICSEARCH_SCHEME: http
+    command: ["-c","/opt/openmetadata/bootstrap/openmetadata-ops.sh -d migrate --force"]
+    networks:
+      - udo-net
+
+volumes:
+  openmetadata-pg-data:
+  openmetadata-es-data:
+
+networks: {}
+

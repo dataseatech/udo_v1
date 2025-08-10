@@ -1,0 +1,19 @@
+services:
+  airbyte-proxy:
+    image: nginx:alpine
+    restart: unless-stopped
+    volumes:
+      - ../../services/airbyte-proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "18000:8000"  # changed host port to avoid collision with Airbyte direct forward
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "-", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks:
+      - udo-net
+
+networks: {}

@@ -1,0 +1,23 @@
+services:
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:latest
+    working_dir: /usr/app
+    entrypoint: ["/bin/bash"]
+    restart: "no"  # Keep this off for debugging
+    environment:
+      - DBT_PROFILES_DIR=/root/.dbt
+    volumes:
+      - ../../services/dbt:/usr/app:rw
+    depends_on:
+      - udo-postgres
+    command: ["-c", "tail -f /dev/null"]  # Prevent container from exiting immediately
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD-SHELL", "dbt --version >/dev/null 2>&1 || exit 1"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - udo-net

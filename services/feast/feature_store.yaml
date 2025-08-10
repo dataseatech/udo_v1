@@ -1,0 +1,10 @@
+project: udo
+registry: data/registry.db
+provider: local
+online_store:
+  type: redis
+  connection_string: redis:6379
+offline_store:
+  type: file
+  # For demo we can later point to DuckDB extracted parquet/csv files
+entity_key_serialization_version: 2

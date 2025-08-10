@@ -1,0 +1,10 @@
+services:
+  promptfoo:
+    image: node:20-alpine
+    working_dir: /app
+    restart: unless-stopped
+    command: sh -c "npm install -g promptfoo && tail -f /dev/null"
+    volumes:
+      - ../../services/promptfoo:/app
+    networks:
+      - udo-net

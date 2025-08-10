@@ -1,0 +1,10 @@
+duckdb==0.9.0
+prefect==2.14.0
+httpx==0.25.0
+prometheus-client==0.18.0
+pydantic==2.4.0
+# Pin griffe to a version compatible with Prefect 2.14.0 (newer 1.x versions removed dataclasses module)
+griffe==0.36.9
+great_expectations==0.18.13
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.29

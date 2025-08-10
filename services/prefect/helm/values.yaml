@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: udo/prefect
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 4200
+
+env:
+  - name: PREFECT_API_URL
+    value: "http://prefect-server:4200/api"
+  - name: AIRBYTE_URL
+    value: "http://airbyte-proxy:8000"
+  - name: PROMETHEUS_GATEWAY
+    value: "http://prometheus-pushgateway:9091"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

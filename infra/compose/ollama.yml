@@ -1,0 +1,15 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    environment:
+      # Optional default model name (pull happens on first request):
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3}
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - udo-net
+
+networks: {}

@@ -1,0 +1,7 @@
+{
+  "title": "Airbyte & Prefect & DuckDB Overview",
+  "panels": [
+    {"type": "graph", "title": "Airbyte Sync Duration", "datasource": "Prometheus", "targets": [{"expr": "airbyte_sync_duration_seconds"}]},
+    {"type": "graph", "title": "Airbyte Sync Count", "datasource": "Prometheus", "targets": [{"expr": "airbyte_syncs_total"}]}
+  ]
+}
