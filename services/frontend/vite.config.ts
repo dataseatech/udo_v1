@@ -4,10 +4,12 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    // Use 5173 to avoid conflict with Grafana (3000)
+    port: 5173,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_BASE || 'http://localhost:8080',
+        // In local dev, proxy API calls directly to backend host mapping 8800.
+        target: process.env.VITE_API_BASE || 'http://localhost:8800',
         changeOrigin: true,
       },
     },

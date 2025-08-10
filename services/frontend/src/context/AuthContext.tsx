@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const existing = sessionStorage.getItem('access_token');
+    let existing = sessionStorage.getItem('access_token');
     if(existing){
       setAuthToken(existing);
     }
@@ -28,9 +28,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function bootstrap(){
       try {
         setLoading(true);
-        if(code && !existing){
+        if(code){
+          // If a code is present, prefer exchanging it and overwrite any stale token
+          if(existing){
+            sessionStorage.removeItem('access_token');
+            setAuthToken(null);
+            existing = null;
+          }
           // Exchange code
-          const r = await fetch(`${API_BASE}/api/auth/callback?code=${encodeURIComponent(code)}`);
+          const redirectUri = window.location.origin;
+          const r = await fetch(`${API_BASE}/api/auth/callback?code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(redirectUri)}`);
             if(r.ok){
               const data = await r.json();
               if(data.access_token){
@@ -60,7 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   function login(){
-    window.location.href = '/api/auth/start-login';
+    const base = API_BASE || '';
+    const redirect = window.location.origin;
+    // Force correct client id and redirect for reliability
+    window.location.href = `${base}/api/auth/start-login?client_id=udo&redirect_uri=${encodeURIComponent(redirect)}`;
   }
   function logout() {
     window.location.href = '/api/auth/logout';

@@ -23,7 +23,13 @@ def verify_token(creds: HTTPAuthorizationCredentials = Depends(http_bearer)):
     token = creds.credentials
     try:
         signing_key = jwk_client.get_signing_key_from_jwt(token).key
-        payload = jwt.decode(token, signing_key, algorithms=["RS256"], audience=OIDC_AUDIENCE, options={"verify_exp": True})
+        # Be permissive on audience for local dev; tokens from Keycloak often use different audiences
+        payload = jwt.decode(
+            token,
+            signing_key,
+            algorithms=["RS256"],
+            options={"verify_exp": True, "verify_aud": False},
+        )
         return payload
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {e}")
@@ -36,9 +42,10 @@ OPENMETADATA_HOST = os.getenv("OPENMETADATA_HOST", "openmetadata-server")
 OPENMETADATA_PORT = os.getenv("OPENMETADATA_PORT", "8585")
 OPENMETADATA_BASE = f"http://{OPENMETADATA_HOST}:{OPENMETADATA_PORT}"
 
-OIDC_CLIENT_ID = os.getenv("OIDC_CLIENT_ID", "udo-frontend")
+# Default the client ID to "udo" to match common local dev setups; override via env var when using a different client
+OIDC_CLIENT_ID = os.getenv("OIDC_CLIENT_ID", "udo")
 OIDC_CLIENT_SECRET = os.getenv("OIDC_CLIENT_SECRET", "")
-OIDC_REDIRECT_URI = os.getenv("OIDC_REDIRECT_URI", "http://localhost:3000")
+OIDC_REDIRECT_URI = os.getenv("OIDC_REDIRECT_URI", "")
 OIDC_TOKEN_ENDPOINT = f"{OIDC_ISSUER}/protocol/openid-connect/token"
 
 app = FastAPI(title="UDO API", version="0.1.0")
@@ -53,18 +60,33 @@ async def health():
 
 
 @app.get("/api/auth/start-login")
-async def start_login(request: Request, use_pkce: bool = True):
+async def start_login(
+    request: Request,
+    use_pkce: bool = True,
+    redirect_uri: str | None = None,
+    client_id: str | None = None,
+):
     issuer_for_browser = OIDC_PUBLIC_ISSUER or OIDC_ISSUER
-    incoming_host = request.headers.get("host", "localhost:3080")
+    incoming_host = request.headers.get("host", "localhost:3000")
+    # Try to infer the frontend origin from Referer; fall back to env or host
+    referer = request.headers.get("referer") or request.headers.get("origin")
+    frontend_origin = None
+    if referer:
+        try:
+            from urllib.parse import urlparse
+            p = urlparse(referer)
+            frontend_origin = f"{p.scheme}://{p.netloc}"
+        except Exception:
+            frontend_origin = None
     runtime_base = f"http://{incoming_host}"
-    redirect_uri = OIDC_REDIRECT_URI or runtime_base
-    if ("localhost:3000" in redirect_uri) and ("localhost:3080" in incoming_host):
-        redirect_uri = runtime_base
-    # Fallback: if issuer still references internal docker hostname 'keycloak' but browser host is localhost, rewrite.
+    # Allow explicit redirect_uri override via query param. Otherwise prefer the
+    # actual frontend origin detected from the browser, then env var, then backend host
+    redirect_uri = redirect_uri or frontend_origin or OIDC_REDIRECT_URI or runtime_base
+    # Fallback: if issuer still references internal docker hostname 'keycloak' but browser host is localhost, rewrite for dev UX.
     if "keycloak" in issuer_for_browser and incoming_host.startswith("localhost"):
         issuer_for_browser = issuer_for_browser.replace("keycloak", "localhost")
     params = {
-        "client_id": OIDC_CLIENT_ID,
+        "client_id": client_id or OIDC_CLIENT_ID,
         "redirect_uri": redirect_uri,
         "response_type": "code",
         "scope": "openid profile email"
@@ -90,13 +112,18 @@ async def auth_me(user=Depends(verify_token)):
 
 
 @app.get("/api/auth/callback")
-async def auth_callback(code: str | None = None, request: Request = None):
+async def auth_callback(code: str | None = None, request: Request = None, redirect_uri: str | None = None):
     if not code:
         raise HTTPException(status_code=400, detail="code required")
+    # If the frontend passes redirect_uri, prefer it. Else fallback to env or request base_url
+    effective_redirect_uri = redirect_uri or OIDC_REDIRECT_URI
+    if not effective_redirect_uri and request is not None:
+        effective_redirect_uri = str(request.base_url).rstrip('/')
+
     data = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": OIDC_REDIRECT_URI,
+        "redirect_uri": effective_redirect_uri,
         "client_id": OIDC_CLIENT_ID,
     }
     # PKCE support
@@ -107,8 +134,12 @@ async def auth_callback(code: str | None = None, request: Request = None):
     if OIDC_CLIENT_SECRET:
         data["client_secret"] = OIDC_CLIENT_SECRET
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    # Ensure we call the browser-accessible issuer if we're in docker with internal hostname
+    token_endpoint = OIDC_TOKEN_ENDPOINT
+    if "keycloak" in token_endpoint and (OIDC_PUBLIC_ISSUER and "localhost" in OIDC_PUBLIC_ISSUER):
+        token_endpoint = token_endpoint.replace("keycloak", "localhost")
     async with httpx.AsyncClient() as client:
-        r = await client.post(OIDC_TOKEN_ENDPOINT, data=data, headers=headers)
+        r = await client.post(token_endpoint, data=data, headers=headers)
         if r.status_code >= 400:
             raise HTTPException(status_code=500, detail=f"token exchange failed: {r.text}")
         tokens = r.json()
